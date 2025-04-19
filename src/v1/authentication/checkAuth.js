@@ -7,7 +7,7 @@ const checkAuth = (req, res, next) => {
         jwt.verify(token, process.env.JWT_SECRET);
         return next();
     } catch (error) {
-        const e = new Error('Invalid token');
+        const e = new Error('Invalid token/s');
         e.status = 401;
         return next(e);
     }
