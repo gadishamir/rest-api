@@ -16,6 +16,7 @@ const getAllProducts = async (req, res, next) => {
             return next(e);
         }
     } catch (error) {
+        console.error(`Error in getAllProducts: ${error.message}`); // Log the error
         const e = new Error('Cannot get all products');
         return next(e);
     }
@@ -36,6 +37,7 @@ const getProductById = async (req, res, next) => {
             return next(e);
         }
     } catch (error) {
+        console.error(`Error in getProductById: ${error.message}`); // Log the error
         const e = new Error('Cannot get product');
         return next(e);
     }
@@ -56,6 +58,7 @@ const deleteProductById = async (req, res, next) => {
             return next(e);
         }
     } catch (error) {
+        console.error(`Error in deleteProductById: ${error.message}`); // Log the error
         const e = new Error('Cannot delete product');
         return next(e);
     }
@@ -67,6 +70,7 @@ const updateProductById = async (req, res, next) => {
     try {
         await validateUpdate(updateParams);
     } catch (err) {
+        console.error(`Validation error in updateProductById: ${err.message}`); // Log the error
         const e = new Error('Invalid product data');
         e.status = 400;
         return next(e);
@@ -85,6 +89,7 @@ const updateProductById = async (req, res, next) => {
             return next(e);
         }
     } catch (error) {
+        console.error(`Error in updateProductById: ${error.message}`); // Log the error
         const e = new Error('Cannot update product');
         return next(e);
     }
@@ -101,11 +106,13 @@ const createProduct = (req, res, next) => {
                 'product': product,
             });
         }).catch((error) => {
-            const e = new Error('Product created failed');
+            console.error(`Error in createProduct: ${error.message}`); // Log the error
+            const e = new Error('Product creation failed');
             e.status = 400;
             return next(e);
         });
     }).catch((error) => {
+        console.error(`Validation error in createProduct: ${error.message}`); // Log the error
         const e = new Error('Invalid product data');
         e.status = 400;
         return next(e);

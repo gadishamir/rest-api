@@ -1,6 +1,6 @@
 const Product = require('./models/productModel');
 
-const createProduct = (productData) => {
+const createProduct = async (productData) => {
     const newProduct = new Product(productData);
     return newProduct.save();
 };
