@@ -22,10 +22,15 @@ const createProduct = async (productData) => {
     return Product.createProduct(productData);
 };
 
+const getProductsByPriceRange = async (minPrice, maxPrice) => {
+    return Product.getProductsByPriceRange(minPrice, maxPrice);
+};
+
 module.exports = {
     getAllProducts,
     getProductById,
     deleteProductById,
     updateProductById,
     createProduct,
+    getProductsByPriceRange,
 };

@@ -119,10 +119,38 @@ const createProduct = (req, res, next) => {
     });
 };
 
+const getProductsByPriceRange = async (req, res, next) => {
+    try {
+        const { min, max } = req.query;
+        
+        // Validate parameters
+        const minPrice = min ? parseFloat(min) : 0;
+        const maxPrice = max ? parseFloat(max) : Number.MAX_SAFE_INTEGER;
+        
+        if (isNaN(minPrice) || isNaN(maxPrice)) {
+            const e = new Error('Invalid price range parameters');
+            e.status = 400;
+            return next(e);
+        }
+        
+        const products = await productService.getProductsByPriceRange(minPrice, maxPrice);
+        
+        res.status(200).json({
+            'status': 'success',
+            'products': products,
+        });
+    } catch (error) {
+        console.error(`Error in getProductsByPriceRange: ${error.message}`);
+        const e = new Error('Cannot get products by price range');
+        return next(e);
+    }
+};
+
 module.exports = {
     getAllProducts,
     getProductById,
     deleteProductById,
     updateProductById,
     createProduct,
+    getProductsByPriceRange,
 };

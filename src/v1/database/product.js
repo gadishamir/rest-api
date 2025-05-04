@@ -26,10 +26,21 @@ const updateProductById = async (productId, updateParams) => {
     return updatedProduct;
 };
 
+const getProductsByPriceRange = async (minPrice, maxPrice) => {
+    const products = await Product.find({
+        price: { $gte: minPrice, $lte: maxPrice }
+    })
+    .sort({ price: -1 }) // Sort by price in descending order
+    .exec();
+    
+    return products;
+};
+
 module.exports = {
     createProduct,
     getProductById,
     getAllProducts,
     deleteProductById,
     updateProductById,
+    getProductsByPriceRange,
 };

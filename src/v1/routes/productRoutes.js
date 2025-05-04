@@ -5,6 +5,7 @@ const checkAuth = require('../authentication/checkAuth');
 
 router.get('/', productController.getAllProducts);
 router.post('/', checkAuth, productController.createProduct);
+router.get('/search/price', productController.getProductsByPriceRange);
 router.get('/:productId', productController.getProductById);
 router.patch('/:productId', checkAuth, productController.updateProductById);
 router.delete('/:productId', checkAuth, productController.deleteProductById);

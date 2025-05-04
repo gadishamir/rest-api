@@ -280,4 +280,171 @@ describe('Product', () => {
             });
         });
     });
+
+    // Test for the new price range search endpoint
+    describe('/GET products by price range route', () => {
+        before((done) => {
+            // Create multiple products with different prices for testing
+            const productData1 = {
+                'name': 'Budget Product',
+                'description': 'Low price product',
+                'price': 9.99,
+                'quantity': 50
+            };
+            
+            const productData2 = {
+                'name': 'Mid-Range Product',
+                'description': 'Medium price product',
+                'price': 49.99,
+                'quantity': 30
+            };
+            
+            const productData3 = {
+                'name': 'Premium Product',
+                'description': 'High price product',
+                'price': 99.99,
+                'quantity': 10
+            };
+            
+            // Clear products first
+            productModel.deleteMany({}, (err) => {
+                // Create test products in sequence
+                chai.request(server)
+                    .post('/v1/products')
+                    .set('Authorization', 'Bearer ' + testUserData.token)
+                    .send(productData1)
+                    .end((err, res) => {
+                        chai.request(server)
+                            .post('/v1/products')
+                            .set('Authorization', 'Bearer ' + testUserData.token)
+                            .send(productData2)
+                            .end((err, res) => {
+                                chai.request(server)
+                                    .post('/v1/products')
+                                    .set('Authorization', 'Bearer ' + testUserData.token)
+                                    .send(productData3)
+                                    .end((err, res) => {
+                                        done();
+                                    });
+                            });
+                    });
+            });
+        });
+        
+        it('should return all products sorted by price in descending order when no range specified', (done) => {
+            chai.request(server)
+                .get('/v1/products/search/price')
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('products');
+                    
+                    const products = res.body.products;
+                    assert(products.length === 3, 'Should return all 3 products');
+                    
+                    // Check descending order
+                    for (let i = 1; i < products.length; i++) {
+                        assert(products[i-1].price >= products[i].price, 
+                               'Products should be in descending price order');
+                    }
+                    
+                    done();
+                });
+        });
+        
+        it('should return products with price >= min parameter', (done) => {
+            const minPrice = 40;
+            
+            chai.request(server)
+                .get(`/v1/products/search/price?min=${minPrice}`)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('products');
+                    
+                    const products = res.body.products;
+                    
+                    // Check that all returned products meet the minimum price
+                    products.forEach(product => {
+                        assert(product.price >= minPrice, 
+                               `All products should have price >= ${minPrice}`);
+                    });
+                    
+                    // Check descending order
+                    for (let i = 1; i < products.length; i++) {
+                        assert(products[i-1].price >= products[i].price, 
+                               'Products should be in descending price order');
+                    }
+                    
+                    done();
+                });
+        });
+        
+        it('should return products with price <= max parameter', (done) => {
+            const maxPrice = 50;
+            
+            chai.request(server)
+                .get(`/v1/products/search/price?max=${maxPrice}`)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('products');
+                    
+                    const products = res.body.products;
+                    
+                    // Check that all returned products meet the maximum price
+                    products.forEach(product => {
+                        assert(product.price <= maxPrice, 
+                               `All products should have price <= ${maxPrice}`);
+                    });
+                    
+                    // Check descending order
+                    for (let i = 1; i < products.length; i++) {
+                        assert(products[i-1].price >= products[i].price, 
+                               'Products should be in descending price order');
+                    }
+                    
+                    done();
+                });
+        });
+        
+        it('should return products within min and max price range', (done) => {
+            const minPrice = 10;
+            const maxPrice = 70;
+            
+            chai.request(server)
+                .get(`/v1/products/search/price?min=${minPrice}&max=${maxPrice}`)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('products');
+                    
+                    const products = res.body.products;
+                    
+                    // Check that all returned products are within range
+                    products.forEach(product => {
+                        assert(product.price >= minPrice && product.price <= maxPrice, 
+                               `All products should have price between ${minPrice} and ${maxPrice}`);
+                    });
+                    
+                    // Check descending order
+                    for (let i = 1; i < products.length; i++) {
+                        assert(products[i-1].price >= products[i].price, 
+                               'Products should be in descending price order');
+                    }
+                    
+                    done();
+                });
+        });
+        
+        it('should handle invalid price parameters gracefully', (done) => {
+            chai.request(server)
+                .get('/v1/products/search/price?min=abc&max=xyz')
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.have.property('error');
+                    done();
+                });
+        });
+    });
 });
